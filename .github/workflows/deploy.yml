@@ -17,7 +17,6 @@ jobs:
         host: ${{secrets.SSH_HOST}}
         username: ${{secrets.SSH_USERNAME}}
         key: ${{secrets.SERVER_SSH_KEY}}
-        passphrase: ${{secrets.SERVER_SSH_PASSPHRASE}}
         script: |
           cd ~/projects/hrta-discord-bot/
           git pull
