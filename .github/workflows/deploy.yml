@@ -19,4 +19,4 @@ jobs:
           cd ~/projects/hrta-discord-bot/
           git pull
           pip install -r requirements.txt
-          chmod +x main.py
+          pm2 restart main.py --interpreter=/usr/bin/python3
