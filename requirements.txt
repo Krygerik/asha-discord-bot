@@ -1,0 +1,6 @@
+discord==1.0.1
+discord.py==1.6.0
+pip==20.2.3
+pylint==2.6.0
+requests==2.25.1
+setuptools==49.2.1

@@ -16,6 +16,7 @@ jobs:
         username: ${{secrets.SSH_USERNAME}}
         key: ${{secrets.SERVER_SSH_KEY}}
         script: |
-          whoami
           cd ~/projects/hrta-discord-bot/
           git pull
+          pip install -r requirements.txt
+          python test.py
