@@ -19,4 +19,5 @@ jobs:
           cd ~/projects/hrta-discord-bot/
           git pull
           pip install -r requirements.txt
-          python test.py
+          chmod +x main.py
+          nohup main.py &
