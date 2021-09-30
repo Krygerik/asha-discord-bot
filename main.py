@@ -11,7 +11,7 @@ url_top_10_users = "http://46.101.232.123:3002/api/auth/get-player-rating-list?l
 url_1000_users = "http://46.101.232.123:3002/api/auth/get-player-rating-list?limit=1000"
 
 # orig
-token = 'ODA4NjE5MjczMjgyNzgxMjA0.YCJLYg.E0pC7hio_K48Ij1xX_R_9dXOxIw'
+token = 'ODA4NjE5MjczMjgyNzgxMjA0.YCJLYg.7Wys8ydGWXwvb_Eq5C8Icl1w1vQ'
 
 # test
 # token = 'ODgzOTg3MTUwMTIxNTk4OTg2.YTR7MA.Mg7iY1P6Ac_V-GJzFGJxC_Pilt0'
