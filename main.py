@@ -451,7 +451,7 @@ Giovanni_message = '''
 
 
 @bot.command(pass_context=False)
-async def Gi_adm(ctx):
+async def Gi(ctx):
     if str(ctx.author) == 'Persona#4190':
         await ctx.send(Giovanni_message)
 
