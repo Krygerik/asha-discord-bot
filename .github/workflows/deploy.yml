@@ -17,6 +17,7 @@ jobs:
         key: ${{secrets.SERVER_SSH_KEY}}
         script: |
           cd ~/projects/hrta-discord-bot/
+          git reset --hard
           git pull
           pip install -r requirements.txt
           pm2 restart main.py --interpreter=/usr/bin/python3
