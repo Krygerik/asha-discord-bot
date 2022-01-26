@@ -9,6 +9,7 @@ from modules.sendLadderPair import sendLadderPair
 from modules.closeLadderGamesByDiscordTag import closeLadderGamesByDiscordTag
 import modules.lists
 import modules.config
+
 bot = commands.Bot(command_prefix='.', intents = discord.Intents.all())
 
 
