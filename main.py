@@ -267,7 +267,7 @@ async def mem(ctx, *args):
     if args[0] == 'list':
         out = ''
         buf = 0
-        numbers_on_list = 4
+        numbers_on_list = 10
         meme_record_list = []
 
         for _ in range((len(names_list)//numbers_on_list+1)-1):
