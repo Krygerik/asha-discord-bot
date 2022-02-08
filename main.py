@@ -4,11 +4,12 @@ from discord.ext import commands
 import requests
 import random
 import re
-
+import asyncio #asyncio-3.4.3
 from modules.sendLadderPair import sendLadderPair
 from modules.closeLadderGamesByDiscordTag import closeLadderGamesByDiscordTag
 import modules.lists
 import modules.config
+import modules.storageForLinks
 
 bot = commands.Bot(command_prefix='.', intents = discord.Intents.all())
 
@@ -46,42 +47,21 @@ async def on_message(message):
         if modules.config.role_game_search in message.content:
             await message.add_reaction('⚔️')
 
-    if str(message.channel) == 'основной':
-        
-        # if str(message.author) == 'zub#9433':
-        #     if 'додик' in message.content.lower():
-        #         random_5 = random.randint(0, 10)
-        #         if random_5 == 0:
-        #             await message.channel.send('Додик? Молодежный сленг не всегда понятен мне.')
-        #         if random_5 == 1:
-        #             await message.channel.send('Директор мира, ну прекратите, я вас совсем не узнаю!')
-        #     if 'негодяй' in message.content.lower():
-        #         random_5 = random.randint(0, 10)
-        #         if random_5 == 0:
-        #             await message.channel.send('Негодяи и подлецы, всё верно')
-        #         if random_5 == 1:
-        #             await message.channel.send('Плуты и проныры')
-        #     if 'пердеть' in message.content.lower():
-        #         random_5 = random.randint(0, 10)
-        #         if random_5 == 0:
-        #             await message.channel.send('Вы у нас от рук отбились?')
-        #         if random_5 == 1:
-        #             await message.channel.send('Максимальное осуждение')
-        #         if random_5 == 2:
-        #             await message.channel.send('Пожилой член партии пердящих в лужу?')
-        
-        if 'балансер' in message.content.lower():
-            random_5 = random.randint(0, 16)
-            if random_5 == 0:
-                await message.channel.send('Балансеp — это мужчина честной судьбы.')
-            if random_5 == 1:
-                await message.channel.send('Балансеp — это хорошо. ')
-            if random_5 == 2:
-                await message.channel.send(
-                    'Балансеp — это человек, который всегда говорит то, что думает, и делает то, что говорит.')
-            if random_5 == 3:
-                await message.channel.send(
-                    'Балансеp — это не только тот, кто сам ответственен, но и кто своей ответственностью спасает других, даже ценой собственной репутации.')
+    if str(message.channel) == 'Основной':
+         if message.author != bot.user:
+            if 'балансер' in message.content.lower():
+                random_5 = random.randint(0, 16)
+                if random_5 == 0:
+                    await message.channel.send('Балансеp — это мужчина честной судьбы.')
+                if random_5 == 1:
+                    await message.channel.send('Балансеp — это хорошо. ')
+                if random_5 == 2:
+                    await message.channel.send(
+                        'Балансеp — это человек, который всегда говорит то, что думает, и делает то, что говорит.')
+                if random_5 == 3:
+                    await message.channel.send(
+                        'Балансеp — это не только тот, кто сам ответственен, но и кто своей ответственностью спасает других, даже ценой собственной репутации.')
+                    
     await bot.process_commands(message)
 
 
@@ -172,14 +152,11 @@ async def prof(ctx):
     response = requests.request("GET", modules.config.url_1000_users, headers=headers, data=payload)
     responseSerializeData = response.json()
     rating_user_list = responseSerializeData.get('DATA')
-    # print(rating_user_list)
     num = 0
     s = ''
     user = 0
-    # print(Roles.keys)
     for user in rating_user_list:
         num += 1
-        # if ((str(ctx.message.author)).split('#')[0]).lower() == (str(user.get('nickname'))).lower():
         if (str(ctx.message.author)).lower() == (str(user.get('discord'))).lower():
             s += 'nick: **{0}**\nrating: **{1}**\nrank: **{2}**\n'.format(user.get('nickname'), user.get('rating'), num)
             main_user = user.get('nickname')
@@ -193,26 +170,7 @@ async def prof(ctx):
     embed = discord.Embed(title=main_role, description=f"Рейтинг: {main_rating} Место: {main_num}", color=0xaeba12)
     embed.set_author(name=main_user, icon_url=ctx.author.avatar_url)
 
-
-    # embed.add_field(name="Достижения", value="Убийца драконов", inline=True)
-    # embed.add_field(name="ᅠ", value="Король гномов", inline=True)
-    # embed.add_field(name="ᅠ", value="Приятный", inline=True)
-    # embed.add_field(name="Турниры", value="Рейтинговый 2020 (3 место) \n Рекрутский 2020 (2 место)", inline=False)
-    # самая лучшая раса
-
-    # embed.set_footer(text="text снизу")
     await ctx.send(embed=embed)
-
-
-# embed.set_author(name = bot.user.name, icon_url = bot.user.avatar_url)
-# # embed.set_footer(name = str(number) )
-# # embed.set_image( icon_url = ctx.author.avatar_url )
-# # embed.set_image( icon_url = ctx.author.avatar_url )
-
-# @bot.command(pass_context = False)
-# async def emoji(ctx):
-# 	await ctx.send("Ку, %s" % bot.get_emoji(609013410948186162))
-# 	# await ctx.send("Ку, %s" % bot.get_emoji(884696604056125470))
 
 
 @bot.command(pass_context=True)
@@ -242,13 +200,143 @@ async def stop(ctx):
 
 @bot.command(pass_context=False)
 async def info(ctx):
-    await ctx.send(modules.lists.info_message)
+    embed1 = discord.Embed(title="Команды рейтинговой игры", description = modules.lists.info_message_1)
+    embed2 = discord.Embed(title="Команды хранилища", description=modules.lists.info_message_2)
+    embed3 = discord.Embed(title="Развлекательные команды", description=modules.lists.info_message_3)
+    embeds = [embed1, embed2, embed3]
+    for embed_page_number in range(len(embeds)):    
+        embeds[embed_page_number].set_footer(text=f"Раздел: [{embed_page_number+1}/{len(embeds)}]")
+    message = await ctx.send(embed=embed1)
+    cur_page = 0
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+    
+    while True:
+        try:
+
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+
+            if str(reaction.emoji) == "▶️" and cur_page+1 != len(embeds):
+                cur_page += 1
+                await message.edit(embed = embeds[cur_page])
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 0:
+                cur_page -= 1
+                await message.edit(embed = embeds[cur_page])
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+
+        except asyncio.TimeoutError:
+            embeds[cur_page].set_footer(text=f"Раздел: [{cur_page+1}/{len(embeds)}] [Время вышло]")
+            await message.edit(embed = embeds[cur_page])
+            await message.clear_reactions()
+            break
 
 
 @bot.command(pass_context=False)
 async def Gi(ctx):
     if str(ctx.author) == 'Persona#4190':
         await ctx.send(modules.lists.Giovanni_message)
+
+
+@bot.command()
+async def mem(ctx, *args):
+    
+
+    con = modules.storageForLinks.sql_connection()
+    modules.storageForLinks.sql_table(con)
+    names_list = modules.storageForLinks.read_sqlite_table(con)
+    names_list_only_name = modules.storageForLinks.read_name_sqlite_table(con)
+    
+    if args[0] == 'add':
+       for role in ctx.author.roles:
+            if str(role.id) in modules.config.rolelist_moder:
+                name_mem = ''
+                for name in args[1:-1:]:
+                    name_mem += name +' '
+                entities = (name_mem.strip(), args[-1], str(ctx.author))
+                await ctx.send(modules.storageForLinks.sql_insert(con, entities))
+                return
+
+    if args[0] == 'list':
+        out = ''
+        buf = 0
+        numbers_on_list = 4
+        meme_record_list = []
+
+        for _ in range((len(names_list)//numbers_on_list+1)-1):
+            for one_record in range(numbers_on_list):
+                out += names_list[one_record+buf] + '\n'
+            meme_record_list.append(out)
+            out=''
+            buf += numbers_on_list
+        for one_record in range(len(names_list)%numbers_on_list):
+            out += names_list[one_record+buf] + '\n'
+        meme_record_list.append(out)
+
+        embed_list = []
+        current_page = 1
+        cur_page = 0
+        embeds = []
+
+        for one_embed in range(len(meme_record_list)):
+            embed_list.append(discord.Embed(title=f"Страница {current_page}", description = meme_record_list[one_embed], color=0xaeba12))
+            embed_list[current_page-1].set_footer(text=f"Раздел: [{current_page}/{len(meme_record_list)}]")
+            current_page += 1
+            embeds.append(embed_list[one_embed])
+        message = await ctx.send(embed=embed_list[0])
+        
+        await message.add_reaction("◀️")
+        await message.add_reaction("▶️")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+
+# paginator
+        while True:
+            try:
+                
+                reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+                if str(reaction.emoji) == "▶️" and cur_page+1 != len(meme_record_list):
+                    cur_page += 1
+                    await message.edit(embed = embeds[cur_page])
+                    await message.remove_reaction(reaction, user)
+
+                elif str(reaction.emoji) == "◀️" and cur_page > 0:
+                    cur_page -= 1
+                    await message.edit(embed = embeds[cur_page])
+                    await message.remove_reaction(reaction, user)
+
+                else:
+                    await message.remove_reaction(reaction, user)
+
+            except asyncio.TimeoutError:
+                embeds[cur_page].set_footer(text=f"Раздел: [{cur_page+1}/{len(meme_record_list)}] [Время вышло]")
+                await message.edit(embed = embeds[cur_page])
+                await message.clear_reactions()
+                break
+
+
+    if args[0] == 'del':
+        for role in ctx.author.roles:
+            if str(role.id) in modules.config.rolelist_moder:
+                name_mem = ''
+                for name in args[1:]:
+                    name_mem += name +' '
+                await ctx.send(modules.storageForLinks.delete_sqlite_record(name_mem.strip()))
+                return
+
+    if args[0] == 'play':
+        num_mem = ''
+        for number in args[1:]:
+            num_mem += number +' '
+        await ctx.send(modules.storageForLinks.read_single_row(names_list_only_name[int(num_mem)-1]))
 
 
 bot.run(modules.config.token)

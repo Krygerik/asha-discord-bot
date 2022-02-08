@@ -4,3 +4,4 @@ pip==20.2.3
 pylint==2.6.0
 requests==2.25.1
 setuptools==49.2.1
+asyncio==3.4.3
