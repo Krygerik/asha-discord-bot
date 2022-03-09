@@ -5,11 +5,13 @@ import requests
 import random
 import re
 import asyncio #asyncio-3.4.3
+
 from modules.sendLadderPair import sendLadderPair
 from modules.closeLadderGamesByDiscordTag import closeLadderGamesByDiscordTag
 import modules.lists
 import modules.config
 import modules.storageForLinks
+import modules.quiz
 
 bot = commands.Bot(command_prefix='.', intents = discord.Intents.all())
 
@@ -67,16 +69,13 @@ async def on_message(message):
 
 @bot.event
 async def on_raw_reaction_add(payload):
+
     channel = discord.utils.get(bot.get_all_channels(), id=payload.channel_id)
     msg = await channel.fetch_message(id=payload.message_id)
+    
     if modules.config.role_game_search in msg.content:
-        print(msg.reactions)
         for reaction in msg.reactions:
             if (reaction.emoji == '⚔️' and reaction.me == True and reaction.count > 1 and payload.member != msg.author):
-                # if (reaction.emoji == '⚔️' and reaction.me == True and reaction.count > 1 ):
-                # if (reaction.emoji == '⚔️' and reaction.me == True and reaction.count == 2):
-                print(msg.author)
-                print(payload.member)
                 author_msg = msg.author
                 author_react = payload.member
                 message = sendLadderPair([str(author_msg), str(author_react)])
@@ -92,6 +91,16 @@ async def on_raw_reaction_add(payload):
                 s = "между {0} и {1}".format(author_msg.mention, author_react.mention)
                 await channel.send(s)
                 await msg.delete()
+    await modules.quiz.handle_click_reaction_on_quiz(channel,payload, bot, msg)
+
+async def getCountUserReaction(reactions, payload_member):
+    count = 0
+    for reaction in reactions:
+        async for user in (reaction.users()):
+            if payload_member == user:
+                count += 1
+
+    return count
 
 
 @bot.command(pass_context=False)
@@ -101,7 +110,6 @@ async def top10(ctx):
     response = requests.request("GET", modules.config.url_top_10_users, headers=headers, data=payload)
     responseSerializeData = response.json()
     rating_user_list = responseSerializeData.get('DATA')
-    print(rating_user_list)
     num = 0
     s = ''
     user = 0
@@ -118,7 +126,6 @@ async def bottom10(ctx):
     response = requests.request("GET", modules.config.url_1000_users, headers=headers, data=payload)
     responseSerializeData = response.json()
     rating_user_list = responseSerializeData.get('DATA')
-    # print(rating_user_list[::-1])
     num = 0
     s = ''
     user = 0
@@ -178,12 +185,7 @@ async def stop(ctx):
     messages = await ctx.channel.history(limit=200).flatten()
     author_command_stop = str(ctx.message.author)
     for msg in messages:
-        # print(msg.author)
-        # print(author_command_stop)
         if modules.config.role_game_search in msg.content and author_command_stop == str(msg.author):
-            # print(1)
-            # if author_command_stop == msg.author:
-            # if str(msg.author) == author_command_stop:
             await msg.delete()
 
     message = closeLadderGamesByDiscordTag(str(ctx.author))
@@ -338,5 +340,9 @@ async def mem(ctx, *args):
             num_mem += number +' '
         await ctx.send(modules.storageForLinks.read_single_row(names_list_only_name[int(num_mem)-1]))
 
+
+@bot.command(pass_context=True)
+async def test(ctx):
+    await modules.quiz.run_quiz(ctx)
 
 bot.run(modules.config.token)
